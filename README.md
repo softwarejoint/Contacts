@@ -2,8 +2,7 @@
 
 Android Contacts API.
 
-[![Release](https://jitpack.io/v/softwarejoint/Contacts.svg)]
-(https://jitpack.io/#softwarejoint/Contacts)
+![Release](https://jitpack.io/v/softwarejoint/Contacts.svg)(https://jitpack.io/#softwarejoint/Contacts)
 
 ## Quick Start
 
