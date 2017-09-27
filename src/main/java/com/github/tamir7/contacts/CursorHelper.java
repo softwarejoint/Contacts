@@ -105,7 +105,6 @@ class CursorHelper {
         }
 
         Account account = getAccount();
-        Log.d("CursorHelper", "number: " + number + " account: " + account);
 
         Integer typeValue = getInt(c, ContactsContract.CommonDataKinds.Phone.TYPE);
         PhoneNumber.Type type = typeValue == null ? PhoneNumber.Type.UNKNOWN :
