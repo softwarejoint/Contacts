@@ -70,7 +70,7 @@ Get all Contacts that their name begins with a specific string OR their phone be
 
 ## Installation
 
-Published to JCenter
+Published to JitPack
 
 Add to build.gradle (app)
 ```
