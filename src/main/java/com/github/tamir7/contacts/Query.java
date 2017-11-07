@@ -19,7 +19,6 @@ package com.github.tamir7.contacts;
 import android.content.Context;
 import android.database.Cursor;
 import android.provider.ContactsContract;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,11 +33,15 @@ import java.util.Set;
  * The Query class defines a query that is used to fetch Contact objects.
  */
 public final class Query {
+
+    private static final int PAGE_LIMIT = 2000;
+
     private final Context context;
     private final Map<String, Where> mimeWhere = new HashMap<>();
     private Where defaultWhere = null;
     private Set<Contact.Field> include = new HashSet<>();
     private List<Query> innerQueries;
+    private int pageSize = PAGE_LIMIT;
 
     Query(Context context) {
         this.context = context;
@@ -130,6 +133,11 @@ public final class Query {
         return this;
     }
 
+    public Query pageSize(int pageSize) {
+        this.pageSize = pageSize;
+        return this;
+    }
+
     /**
      * Retrieves a list of contacts that satisfy this query.
      *
@@ -218,15 +226,34 @@ public final class Query {
             where = Where.in(ContactsContract.RawContacts.CONTACT_ID, new ArrayList<>(ids));
         }
 
+        int page = 0;
+        boolean hasMore;
+
+        Map<Long, Contact> contactsMap = new LinkedHashMap<>();
+
+        do {
+            hasMore = fetchRows(where, page, contactsMap);
+            page++;
+        } while(hasMore);
+
+        return new ArrayList<>(contactsMap.values());
+    }
+
+    private boolean fetchRows(final Where where, int page, Map<Long, Contact> contactsMap) {
+        final int offset = page * pageSize;
+        String limitOffset = " LIMIT " + pageSize + " OFFSET " + offset;
+
         Cursor c = context.getContentResolver().query(ContactsContract.Data.CONTENT_URI,
                 buildProjection(),
                 addWhere(where, buildWhereFromInclude()).toString(),
                 null,
-                ContactsContract.Data.DISPLAY_NAME);
+                ContactsContract.Data.DISPLAY_NAME + limitOffset);
 
-        Map<Long, Contact> contactsMap = new LinkedHashMap<>();
+        boolean hasMore = false;
 
         if (c != null) {
+            hasMore = c.getCount() == pageSize;
+
             while (c.moveToNext()) {
                 CursorHelper helper = new CursorHelper(c);
                 Long contactId = helper.getContactId();
@@ -243,7 +270,7 @@ public final class Query {
             c.close();
         }
 
-        return new ArrayList<>(contactsMap.values());
+        return hasMore;
     }
 
     private Where buildWhereFromInclude() {
