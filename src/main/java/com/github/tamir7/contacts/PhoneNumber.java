@@ -96,16 +96,6 @@ public class PhoneNumber {
         return account;
     }
 
-    public boolean isWhatsApp() {
-        return account != null
-                && "WhatsApp".equalsIgnoreCase(account.getName())
-                && "com.whatsapp".equalsIgnoreCase(account.getType());
-    }
-
-    public boolean isLocalAccount() {
-        return account == null || account.isLocal();
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
