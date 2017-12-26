@@ -17,6 +17,7 @@
 package com.github.tamir7.contacts;
 
 import android.provider.ContactsContract;
+import android.text.TextUtils;
 
 import org.json.JSONObject;
 
@@ -32,22 +33,28 @@ public class PhoneNumber {
     private final Type type;
     private final String label;
     private final String normalizedNumber;
-    private final Account account;
+    private Account account;
 
-    PhoneNumber(String number, Type type, String normalizedNumber, Account account) {
+    PhoneNumber(String number, Type type, String normalizedNumber) {
         this.number = number;
         this.type = type;
-        this.account = account;
         this.label = null;
         this.normalizedNumber = normalizedNumber;
     }
 
-    PhoneNumber(String number, String label, String normalizedNumber, Account account) {
+    PhoneNumber(String number, String label, String normalizedNumber) {
         this.number = number;
-        this.account = account;
         this.type = Type.CUSTOM;
         this.label = label;
         this.normalizedNumber = normalizedNumber;
+    }
+
+    void setAccount(Account account) {
+        this.account = account;
+    }
+
+    public Account getAccount() {
+        return account;
     }
 
     /**
@@ -92,10 +99,6 @@ public class PhoneNumber {
      * @return type.
      */
 
-    public Account getAccount() {
-        return account;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -116,6 +119,10 @@ public class PhoneNumber {
         result = 31 * result + (label != null ? label.hashCode() : 0);
         result = 31 * result + (normalizedNumber != null ? normalizedNumber.hashCode() : 0);
         return result;
+    }
+
+    public String getAccountType() {
+        return account == null || account.getAccountType() == null ? "" : account.getAccountType();
     }
 
     public enum Type {

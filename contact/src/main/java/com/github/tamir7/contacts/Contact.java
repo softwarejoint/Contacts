@@ -43,6 +43,7 @@ public final class Contact {
     private final Set<String> websites = new HashSet<>();
     private final Set<Address> addresses = new HashSet<>();
     private String note;
+    private String lookUpKey;
 
     interface AbstractField {
         String getMimeType();
@@ -51,7 +52,6 @@ public final class Contact {
     }
 
     public enum Field implements AbstractField {
-        ContactId(null, ContactsContract.RawContacts.CONTACT_ID),
         DisplayName(null, ContactsContract.Data.DISPLAY_NAME),
         GivenName(ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE,
                 ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME),
@@ -128,6 +128,8 @@ public final class Contact {
     }
 
     enum InternalField implements AbstractField {
+        ContactId(null, ContactsContract.RawContacts.CONTACT_ID),
+        LookUpKey(null, ContactsContract.Data.LOOKUP_KEY),
         MimeType(null, ContactsContract.Data.MIMETYPE);
 
         private final String column;
@@ -153,6 +155,10 @@ public final class Contact {
 
     void setId(Long id) {
         this.id = id;
+    }
+
+    void setLookUpKey(String lookUpKey) {
+        this.lookUpKey = lookUpKey;
     }
 
     Contact addDisplayName(String displayName) {
@@ -224,6 +230,10 @@ public final class Contact {
         return id;
     }
 
+    public String getLookUpKey() {
+        return lookUpKey;
+    }
+
     /**
      * Gets a the display name the contact.
      *
@@ -251,6 +261,9 @@ public final class Contact {
         return familyName;
     }
 
+    public boolean hasPhoneNumber() {
+        return !phoneNumbers.isEmpty();
+    }
     /**
      * Gets a list of all phone numbers the contact has.
      *

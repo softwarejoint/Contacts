@@ -18,7 +18,10 @@ package com.github.tamir7.contacts;
 
 import android.database.Cursor;
 import android.provider.ContactsContract;
+import android.text.TextUtils;
 import android.util.Log;
+
+import java.util.Set;
 
 class CursorHelper {
     private final Cursor c;
@@ -29,6 +32,10 @@ class CursorHelper {
 
     Long getContactId() {
         return getLong(c, ContactsContract.RawContacts.CONTACT_ID);
+    }
+
+    String getLookUpKey() {
+        return getString(c, ContactsContract.Data.LOOKUP_KEY);
     }
 
     String getMimeType() {
@@ -86,35 +93,39 @@ class CursorHelper {
         return new Address(address, street, city, region, postcode, country, label);
     }
 
-    private Account getAccount() {
-        String accountName = getString(c, ContactsContract.RawContacts.ACCOUNT_NAME);
-        String accountType = getString(c, ContactsContract.RawContacts.ACCOUNT_TYPE);
-
+    Account getAccount() {
+        final String accountName = getString(c, ContactsContract.RawContacts.ACCOUNT_NAME);
+        final String accountType = getString(c, ContactsContract.RawContacts.ACCOUNT_TYPE);
         return new Account(accountName, accountType);
     }
 
-    PhoneNumber getPhoneNumber() {
+    PhoneNumber getPhoneNumber(Set<String> numbers) {
         String number = getString(c, ContactsContract.CommonDataKinds.Phone.NUMBER);
-        if (number == null) {
-            return null;
-        }
+        if (TextUtils.isEmpty(number)) { return null; }
 
         String normalizedNumber = null;
+
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
             normalizedNumber = getString(c, ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER);
         }
 
-        Account account = getAccount();
+        if (!TextUtils.isEmpty(normalizedNumber)) {
+            if (numbers.contains(normalizedNumber)) { return null; }
+            else { numbers.add(normalizedNumber); }
+        }
+        else if (numbers.contains(number)) { numbers.add(number); }
+        else { return null; }
 
         Integer typeValue = getInt(c, ContactsContract.CommonDataKinds.Phone.TYPE);
         PhoneNumber.Type type = typeValue == null ? PhoneNumber.Type.UNKNOWN :
                 PhoneNumber.Type.fromValue(typeValue);
+
         if (!type.equals(PhoneNumber.Type.CUSTOM)) {
-            return new PhoneNumber(number, type, normalizedNumber, account);
+            return new PhoneNumber(number, type, normalizedNumber);
         }
 
         return new PhoneNumber(number,
-                getString(c, ContactsContract.CommonDataKinds.Phone.LABEL), normalizedNumber, account);
+                getString(c, ContactsContract.CommonDataKinds.Phone.LABEL), normalizedNumber);
     }
 
     Email getEmail() {

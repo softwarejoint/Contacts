@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.github.tamir7.contacts.Contact;
-import com.github.tamir7.contacts.Contacts;
 import com.github.tamir7.contacts.PhoneNumber;
 import com.github.tamir7.contacts.Query;
 
@@ -42,19 +41,19 @@ public class MainActivity extends Activity implements PermissionCallBack {
         if (!permissionGranted) return;
         List<Contact> contacts = getPhoneContacts();
         for (Contact contact: contacts) {
+            Log.d(TAG,  "Contact: \tname: " + contact.getDisplayName()  + "\tlookUpKey: " + contact.getLookUpKey() + "\tid: " + contact.getId());
             for (PhoneNumber number: contact.getPhoneNumbers()) {
-                Log.d(TAG, "Contact: account: " + number.getAccount().getType() + "\tname: " + contact.getDisplayName() + "\tnumber: " + number.getNumber());
+                Log.d(TAG, "\tNumber: account: " + number.getAccountType() + "\tnumber: " + number.getNumber());
             }
         }
     }
 
     public List<Contact> getPhoneContacts() {
-        Query query = Contacts.getQuery(this);
+        Query query = Query.newQuery(this);
         query.hasPhoneNumber();
-        query.pageSize(2);
         query.include(Contact.Field.DisplayName, Contact.Field.PhoneNumber,
-                Contact.Field.PhoneNormalizedNumber, Contact.Field.ContactId,
-                Contact.Field.AccountName, Contact.Field.AccountType);
+                Contact.Field.PhoneNormalizedNumber, Contact.Field.AccountName,
+                Contact.Field.AccountType);
         return query.find();
     }
 }

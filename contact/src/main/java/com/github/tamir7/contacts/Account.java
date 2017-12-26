@@ -1,28 +1,24 @@
 package com.github.tamir7.contacts;
 
 /**
- * Created by Pankaj Soni on 27/09/17.
- * Software Joint Pvt. Ltd.
- * pankajsoni@softwarejoint.com
+ * Created by Pankaj Soni <pankajsoni@softwarejoint.com> on 26/12/17.
+ * Copyright (c) 2017 ${$COMPANY}. All rights reserved.
  */
 public class Account {
-    private final String name;
-    private final String type;
+    private final String accountName;
+    private final String accountType;
 
-    Account(String name, String type) {
-        this.name = name;
-        this.type = type;
+    Account(String accountName, String accountType) {
+
+        this.accountName = accountName;
+        this.accountType = accountType;
     }
 
-    public String getName() {
-        return name;
+    public String getAccountName() {
+        return accountName;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public boolean isLocal() {
-        return "com.google".equals(type);
+    public String getAccountType() {
+        return accountType;
     }
 }

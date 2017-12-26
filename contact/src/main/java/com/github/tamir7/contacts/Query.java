@@ -19,6 +19,8 @@ package com.github.tamir7.contacts;
 import android.content.Context;
 import android.database.Cursor;
 import android.provider.ContactsContract;
+import android.text.TextUtils;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,6 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * The Query class defines a query that is used to fetch Contact objects.
@@ -35,6 +38,7 @@ import java.util.Set;
 public final class Query {
 
     private static final int PAGE_LIMIT = 2000;
+    private static final String TAG = "Query";
 
     private final Context context;
     private final Map<String, Where> mimeWhere = new HashMap<>();
@@ -43,9 +47,12 @@ public final class Query {
     private List<Query> innerQueries;
     private int pageSize = PAGE_LIMIT;
 
-    Query(Context context) {
-        this.context = context;
-        include.addAll(Arrays.asList(Contact.Field.values()));
+    public static Query newQuery(Context context) {
+        return new Query(context);
+    }
+
+    private Query(Context context) {
+        this.context = context.getApplicationContext();
     }
 
     /**
@@ -164,7 +171,7 @@ public final class Query {
     }
 
     private List<Long> findIds(List<Long> ids, String mimeType, Where innerWhere) {
-        String[] projection = { ContactsContract.RawContacts.CONTACT_ID};
+        String[] projection = { ContactsContract.RawContacts.CONTACT_ID };
         Where where = Where.equalTo(ContactsContract.Data.MIMETYPE, mimeType);
         where = addWhere(where, innerWhere);
         if (!ids.isEmpty()) {
@@ -226,26 +233,31 @@ public final class Query {
             where = Where.in(ContactsContract.RawContacts.CONTACT_ID, new ArrayList<>(ids));
         }
 
+        final String[] projection = buildProjection();
+
+        final String selection = addWhere(where, buildWhereFromInclude()).toString();
+
         int page = 0;
         boolean hasMore;
 
         Map<Long, Contact> contactsMap = new LinkedHashMap<>();
+        Set<String> numbers = new HashSet<>();
 
         do {
-            hasMore = fetchRows(where, page, contactsMap);
+            hasMore = fetchRows(projection, selection, page, contactsMap, numbers);
             page++;
         } while(hasMore);
 
         return new ArrayList<>(contactsMap.values());
     }
 
-    private boolean fetchRows(final Where where, int page, Map<Long, Contact> contactsMap) {
+    private boolean fetchRows(String[] projection, String selection, int page, Map<Long, Contact> contactsMap, Set<String> numbers) {
         final int offset = page * pageSize;
         String limitOffset = " LIMIT " + pageSize + " OFFSET " + offset;
 
         Cursor c = context.getContentResolver().query(ContactsContract.Data.CONTENT_URI,
-                buildProjection(),
-                addWhere(where, buildWhereFromInclude()).toString(),
+                projection,
+                selection,
                 null,
                 ContactsContract.Data.DISPLAY_NAME + limitOffset);
 
@@ -256,15 +268,22 @@ public final class Query {
 
             while (c.moveToNext()) {
                 CursorHelper helper = new CursorHelper(c);
-                Long contactId = helper.getContactId();
+                final Long contactId = helper.getContactId();
+                final String lookUpKey = helper.getLookUpKey();
+
                 Contact contact = contactsMap.get(contactId);
+
                 if (contact == null) {
                     contact = new Contact();
-                    contactsMap.put(contactId, contact);
                 }
 
                 contact.setId(contactId);
-                updateContact(contact, helper);
+                contact.setLookUpKey(lookUpKey);
+                updateContact(contact, helper, numbers);
+
+                if (contact.hasPhoneNumber()) {
+                    contactsMap.put(contactId, contact);
+                }
             }
 
             c.close();
@@ -292,7 +311,7 @@ public final class Query {
         }
     }
 
-    private void updateContact(Contact contact, CursorHelper helper) {
+    private void updateContact(Contact contact, CursorHelper helper, Set<String> numbers) {
         String displayName = helper.getDisplayName();
         if (displayName != null) {
             contact.addDisplayName(displayName);
@@ -306,9 +325,10 @@ public final class Query {
         String mimeType = helper.getMimeType();
         switch (mimeType) {
             case ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE:
-                PhoneNumber phoneNumber = helper.getPhoneNumber();
+                PhoneNumber phoneNumber = helper.getPhoneNumber(numbers);
                 if (phoneNumber != null) {
                     contact.addPhoneNumber(phoneNumber);
+                    phoneNumber.setAccount(helper.getAccount());
                 }
                 break;
             case ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE:
