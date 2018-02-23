@@ -5,6 +5,7 @@ package com.github.tamir7.contacts;
  * Copyright (c) 2017 ${$COMPANY}. All rights reserved.
  */
 public class Account {
+
     private final String accountName;
     private final String accountType;
 

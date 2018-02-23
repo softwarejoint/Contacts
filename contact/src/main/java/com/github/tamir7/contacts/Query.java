@@ -46,6 +46,8 @@ public final class Query {
     private Set<Contact.Field> include = new HashSet<>();
     private List<Query> innerQueries;
     private int pageSize = PAGE_LIMIT;
+    private boolean filterDuplicates;
+    private List<String> filterAccounts;
 
     public static Query newQuery(Context context) {
         return new Query(context);
@@ -53,6 +55,7 @@ public final class Query {
 
     private Query(Context context) {
         this.context = context.getApplicationContext();
+        this.filterAccounts = new ArrayList<>();
     }
 
     /**
@@ -145,6 +148,15 @@ public final class Query {
         return this;
     }
 
+    public Query filterDuplicates(boolean filterDuplicates) {
+        this.filterDuplicates = filterDuplicates;
+        return this;
+    }
+
+    public Query filterAccounts(List<String> accounts) {
+        this.filterAccounts.addAll(accounts);
+        return this;
+    }
     /**
      * Retrieves a list of contacts that satisfy this query.
      *
@@ -325,11 +337,20 @@ public final class Query {
         String mimeType = helper.getMimeType();
         switch (mimeType) {
             case ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE:
-                PhoneNumber phoneNumber = helper.getPhoneNumber(numbers);
-                if (phoneNumber != null) {
-                    contact.addPhoneNumber(phoneNumber);
-                    phoneNumber.setAccount(helper.getAccount());
+
+                Account account = helper.getAccount();
+
+                if (account != null && filterAccounts.contains(account.getAccountType())) {
+                    break;
                 }
+
+                PhoneNumber phoneNumber = helper.getPhoneNumber(numbers, filterDuplicates);
+
+                if (phoneNumber != null) {
+                    phoneNumber.setAccount(account);
+                    contact.addPhoneNumber(phoneNumber);
+                }
+
                 break;
             case ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE:
                 Email email = helper.getEmail();

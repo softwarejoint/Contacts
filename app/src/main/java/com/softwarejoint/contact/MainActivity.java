@@ -1,5 +1,7 @@
 package com.softwarejoint.contact;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.os.Bundle;
@@ -9,6 +11,7 @@ import com.github.tamir7.contacts.Contact;
 import com.github.tamir7.contacts.PhoneNumber;
 import com.github.tamir7.contacts.Query;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends Activity implements PermissionCallBack {
@@ -49,11 +52,21 @@ public class MainActivity extends Activity implements PermissionCallBack {
     }
 
     public List<Contact> getPhoneContacts() {
-        Query query = Query.newQuery(this);
-        query.hasPhoneNumber();
-        query.include(Contact.Field.DisplayName, Contact.Field.PhoneNumber,
-                Contact.Field.PhoneNormalizedNumber, Contact.Field.AccountName,
-                Contact.Field.AccountType);
-        return query.find();
+        List<String> filterAccounts = new ArrayList<>();
+        Account[] accounts = AccountManager.get(this).getAccounts();
+        for (Account account: accounts) {
+            filterAccounts.add(account.type);
+        }
+
+        filterAccounts.remove("com.google");
+
+        return Query.newQuery(this)
+                .hasPhoneNumber()
+                .filterDuplicates(true)
+                .filterAccounts(filterAccounts)
+                .include(Contact.Field.DisplayName, Contact.Field.PhoneNumber,
+                        Contact.Field.PhoneNormalizedNumber, Contact.Field.AccountName,
+                        Contact.Field.AccountType)
+                .find();
     }
 }

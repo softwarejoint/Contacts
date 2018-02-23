@@ -19,7 +19,6 @@ package com.github.tamir7.contacts;
 import android.database.Cursor;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
-import android.util.Log;
 
 import java.util.Set;
 
@@ -99,9 +98,11 @@ class CursorHelper {
         return new Account(accountName, accountType);
     }
 
-    PhoneNumber getPhoneNumber(Set<String> numbers) {
+    PhoneNumber getPhoneNumber(Set<String> numbers, boolean filterDuplicates) {
         String number = getString(c, ContactsContract.CommonDataKinds.Phone.NUMBER);
-        if (TextUtils.isEmpty(number)) { return null; }
+        if (TextUtils.isEmpty(number)) {
+            return null;
+        }
 
         String normalizedNumber = null;
 
@@ -109,12 +110,20 @@ class CursorHelper {
             normalizedNumber = getString(c, ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER);
         }
 
-        if (!TextUtils.isEmpty(normalizedNumber)) {
-            if (numbers.contains(normalizedNumber)) { return null; }
-            else { numbers.add(normalizedNumber); }
+        if (filterDuplicates) {
+            if (!TextUtils.isEmpty(normalizedNumber)) {
+                if (numbers.contains(normalizedNumber)) {
+                    return null;
+                }
+
+                numbers.add(normalizedNumber);
+
+            } else if (numbers.contains(number)) {
+                return null;
+            } else {
+                numbers.add(number);
+            }
         }
-        else if (numbers.contains(number)) { numbers.add(number); }
-        else { return null; }
 
         Integer typeValue = getInt(c, ContactsContract.CommonDataKinds.Phone.TYPE);
         PhoneNumber.Type type = typeValue == null ? PhoneNumber.Type.UNKNOWN :
@@ -155,7 +164,7 @@ class CursorHelper {
         }
 
         Integer typeValue = getInt(c, ContactsContract.CommonDataKinds.Event.TYPE);
-        Event.Type type = typeValue ==  null ? Event.Type.UNKNOWN : Event.Type.fromValue(typeValue);
+        Event.Type type = typeValue == null ? Event.Type.UNKNOWN : Event.Type.fromValue(typeValue);
         if (!type.equals(Event.Type.CUSTOM)) {
             return new Event(startDate, type);
         }
@@ -173,7 +182,7 @@ class CursorHelper {
         return index == -1 ? null : c.getInt(index);
     }
 
-    private  Long getLong(Cursor c, String column) {
+    private Long getLong(Cursor c, String column) {
         int index = c.getColumnIndex(column);
         return index == -1 ? null : c.getLong(index);
     }
