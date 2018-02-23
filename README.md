@@ -20,6 +20,29 @@ Get Contacts with phone numbers only
     List<Contact> contacts = q.find();
 ```
 
+Get Unique Contacts with phone numbers only
+
+```
+    public List<Contact> getPhoneContacts() {
+        List<String> filterAccounts = new ArrayList<>();
+        Account[] accounts = AccountManager.get(this).getAccounts();
+        
+        for (Account account: accounts) {
+            filterAccounts.add(account.type);
+        }
+        
+        filterAccounts.remove("com.google");
+        
+        return Query.newQuery(this)
+                .hasPhoneNumber()
+                .filterDuplicates(true)
+                .filterAccounts(filterAccounts)
+                .include(Contact.Field.DisplayName, Contact.Field.PhoneNumber,
+                        Contact.Field.PhoneNormalizedNumber, Contact.Field.AccountName,
+                        Contact.Field.AccountType)
+                .find();
+    }
+```
 Get Specific fields
 
 ```
