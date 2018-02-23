@@ -64,6 +64,7 @@ public class MainActivity extends Activity implements PermissionCallBack {
                 .hasPhoneNumber()
                 .filterDuplicates(true)
                 .filterAccounts(filterAccounts)
+                .setMinPhoneNumberLength(6)
                 .include(Contact.Field.DisplayName, Contact.Field.PhoneNumber,
                         Contact.Field.PhoneNormalizedNumber, Contact.Field.AccountName,
                         Contact.Field.AccountType)

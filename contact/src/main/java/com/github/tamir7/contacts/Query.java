@@ -48,6 +48,7 @@ public final class Query {
     private int pageSize = PAGE_LIMIT;
     private boolean filterDuplicates;
     private List<String> filterAccounts;
+    private int minPhoneNumberLength = 1;
 
     public static Query newQuery(Context context) {
         return new Query(context);
@@ -148,13 +149,18 @@ public final class Query {
         return this;
     }
 
-    public Query filterDuplicates(boolean filterDuplicates) {
-        this.filterDuplicates = filterDuplicates;
+    public Query filterDuplicates(boolean filter) {
+        this.filterDuplicates = filter;
         return this;
     }
 
     public Query filterAccounts(List<String> accounts) {
         this.filterAccounts.addAll(accounts);
+        return this;
+    }
+
+    public Query setMinPhoneNumberLength(int minLength) {
+        this.minPhoneNumberLength = minLength;
         return this;
     }
     /**
@@ -344,7 +350,7 @@ public final class Query {
                     break;
                 }
 
-                PhoneNumber phoneNumber = helper.getPhoneNumber(numbers, filterDuplicates);
+                PhoneNumber phoneNumber = helper.getPhoneNumber(numbers, filterDuplicates, minPhoneNumberLength);
 
                 if (phoneNumber != null) {
                     phoneNumber.setAccount(account);

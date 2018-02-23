@@ -98,7 +98,7 @@ class CursorHelper {
         return new Account(accountName, accountType);
     }
 
-    PhoneNumber getPhoneNumber(Set<String> numbers, boolean filterDuplicates) {
+    PhoneNumber getPhoneNumber(Set<String> numbers, boolean filterDuplicates, int minPhoneNumberLength) {
         String number = getString(c, ContactsContract.CommonDataKinds.Phone.NUMBER);
         if (TextUtils.isEmpty(number)) {
             return null;
@@ -118,7 +118,7 @@ class CursorHelper {
 
                 numbers.add(normalizedNumber);
 
-            } else if (numbers.contains(number)) {
+            } else if (numbers.contains(number) || number.length() <= minPhoneNumberLength) {
                 return null;
             } else {
                 numbers.add(number);
