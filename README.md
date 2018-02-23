@@ -2,7 +2,24 @@
 
 Android Contacts API.
 
-![Release](https://jitpack.io/v/softwarejoint/Contacts.svg)(https://jitpack.io/#softwarejoint/Contacts)
+[![Release](https://jitpack.io/v/softwarejoint/Contacts.svg)](https://jitpack.io/#softwarejoint/Contacts)
+
+## Installation
+
+Published to JitPack
+
+Add to build.gradle (app)
+```
+    repositories {
+        jcenter()
+        maven { url "https://jitpack.io" }
+    }
+
+    dependencies {
+        compile 'com.github.softwarejoint:Contacts:1.3.0'
+    }
+    
+```
 
 ## Quick Start
 
@@ -99,23 +116,6 @@ Get all Contacts that their name begins with a specific string OR their phone be
     mainQuery.or(qs);
     List<Contact> contacts = mainQuery.find();
 
-```
-
-## Installation
-
-Published to JitPack
-
-Add to build.gradle (app)
-```
-    repositories {
-        jcenter()
-        maven { url "https://jitpack.io" }
-    }
-
-    dependencies {
-        compile 'com.github.softwarejoint:Contacts:1.3.0'
-    }
-    
 ```
 
 ## License
