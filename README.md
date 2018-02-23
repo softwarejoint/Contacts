@@ -43,6 +43,16 @@ Get Unique Contacts with phone numbers only
                 .find();
     }
 ```
+
+Get Account
+```
+    PhoneNumber number = getPhoneContact();
+    Account account = number.getAccount();
+    account.getAccountType();
+    account.getAccountName();
+    
+```
+
 Get Specific fields
 
 ```
