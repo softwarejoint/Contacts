@@ -113,7 +113,7 @@ Add to build.gradle (app)
     }
 
     dependencies {
-        compile 'com.github.softwarejoint:Contacts:1.1.8'
+        compile 'com.github.softwarejoint:Contacts:1.3.0'
     }
     
 ```
